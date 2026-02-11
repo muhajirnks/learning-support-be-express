@@ -1,0 +1,19 @@
+import { Router } from "express";
+import courseController from "./course.controller";
+import authMiddleware from "@/internal/middleware/auth";
+import roleMiddleware from "@/internal/middleware/role";
+import { uploadCourseThumbnail } from "@/internal/middleware/upload";
+
+const router = Router();
+
+// Public routes
+router.get("/", courseController.getCourses);
+router.get("/:id", courseController.getCourseById);
+
+// Admin routes
+router.post("/", authMiddleware, roleMiddleware(["admin"]), uploadCourseThumbnail, courseController.createCourse);
+router.put("/:id", authMiddleware, roleMiddleware(["admin"]), uploadCourseThumbnail, courseController.updateCourse);
+router.put("/:id", authMiddleware, roleMiddleware(["admin"]), courseController.updateCourse);
+router.delete("/:id", authMiddleware, roleMiddleware(["admin"]), courseController.deleteCourse);
+
+export default router;

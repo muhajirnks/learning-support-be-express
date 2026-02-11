@@ -16,5 +16,4 @@ const upload = multer({
    },
 });
 
-export const uploadProductImage = upload.single("image");
-export const uploadStoreAvatar = upload.single("avatar");
+export const uploadCourseThumbnail = upload.single("thumbnail");
