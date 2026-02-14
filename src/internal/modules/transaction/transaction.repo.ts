@@ -3,11 +3,15 @@ import { QueryFilter, UpdateQuery } from "mongoose";
 import { ListTransactionRequest } from "./transaction.validation";
 
 class TransactionRepo {
-   async findAll(query: ListTransactionRequest) {
+   async findAll(query: ListTransactionRequest & {user?: string}) {
       const filter: QueryFilter<TransactionSchema> = {};
 
       if (query.status) {
          filter.status = query.status;
+      }
+
+      if (query.user) {
+         filter.user = query.user;
       }
 
       if (query.search) {

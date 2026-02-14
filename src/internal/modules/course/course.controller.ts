@@ -52,6 +52,12 @@ class CourseController {
          message: "Course deleted successfully",
       });
    }
+
+   async getMyCourses(req: Request, res: Response) {
+      const query = await validateSchema(listCourseSchema, req.query);
+      const result = await courseService.getMyCourses(req.user!.id, query);
+      paginationResponse(res, result);
+   }
 }
 
 export default new CourseController();

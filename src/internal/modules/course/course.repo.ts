@@ -3,8 +3,12 @@ import { QueryFilter, UpdateQuery } from "mongoose";
 import { ListCourseRequest } from "./course.validation";
 
 class CourseRepo {
-   async findAll(query: ListCourseRequest) {
+   async findAll(query: ListCourseRequest & { ids?: string[] }) {
       const filter: QueryFilter<CourseSchema> = {};
+
+      if (query.ids) {
+         filter._id = { $in: query.ids };
+      }
 
       if (query.search) {
          filter.$or = [

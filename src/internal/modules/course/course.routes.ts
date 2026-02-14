@@ -8,6 +8,7 @@ const router = Router();
 
 // Public routes
 router.get("/", silentAuthMiddleware, courseController.getCourses);
+router.get("/my", authMiddleware, roleMiddleware(["user"]), courseController.getMyCourses);
 router.get("/:id", silentAuthMiddleware, courseController.getCourseById);
 
 // Admin routes

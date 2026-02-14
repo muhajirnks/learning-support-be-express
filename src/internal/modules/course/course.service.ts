@@ -10,6 +10,7 @@ import mongoose from "mongoose";
 import { uploadFile } from "@/pkg/cloudinary/cloudinary";
 import progressRepo from "../progress/progress.repo";
 import transactionRepo from "../transaction/transaction.repo";
+import { PaginationResult } from "@/pkg/pagination/models";
 
 class CourseService {
    async getCourses(query: ListCourseRequest, userId?: string) {
@@ -118,6 +119,35 @@ class CourseService {
       const course = await courseRepo.delete(id);
       if (!course) throw NewNotFoundError("Course not found");
       return course;
+   }
+
+   async getMyCourses(userId: string, query: ListCourseRequest) {
+      // Find all successful transactions for this user
+      const transactions = await transactionRepo.findMany({
+         user: new mongoose.Types.ObjectId(userId),
+         status: "success",
+      });
+
+      const courseIds = transactions.map((t) => t.course.toString());
+      
+      // If no courses purchased, return empty pagination
+      if (courseIds.length === 0) {
+         return {
+            data: [],
+            meta: {
+               total: 0,
+               page: query.page,
+               limit: query.limit,
+               lastPage: 1,
+            },
+         } as PaginationResult<CourseSchema>;
+      }
+
+      // Find courses by IDs
+      return await courseRepo.findAll({
+         ...query,
+         ids: courseIds,
+      });
    }
 }
 

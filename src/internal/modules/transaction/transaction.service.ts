@@ -5,7 +5,7 @@ import {
    ListTransactionRequest,
    UpdateTransactionStatusRequest,
 } from "./transaction.validation";
-import { NewNotFoundError, NewBadRequestError } from "@/pkg/apperror/appError";
+import { NewNotFoundError } from "@/pkg/apperror/appError";
 import mongoose from "mongoose";
 
 class TransactionService {
@@ -46,7 +46,7 @@ class TransactionService {
    }
 
    async getMyTransactions(userId: string, query: ListTransactionRequest) {
-      return await transactionRepo.findAll({ ...query, search: userId }); // Custom filter in repo would be better
+      return await transactionRepo.findAll({ ...query, user: userId }); // Custom filter in repo would be better
    }
 
    async checkTransaction(userId: string, courseId: string) {
