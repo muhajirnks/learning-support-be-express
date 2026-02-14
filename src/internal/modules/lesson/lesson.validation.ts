@@ -6,16 +6,11 @@ export const listLessonSchema = yup.object({
    course: yup.string().required("Course is required"),
    search: yup.string().optional(),
    sort: yup
-         .string()
-         .optional()
-         .oneOf([
-            "_id",
-            "title",
-            "createdAt",
-            "updatedAt",
-         ])
-         .default("_id"),
-      direction: yup.string().oneOf(["asc", "desc"]).optional().default("desc"),
+      .string()
+      .optional()
+      .oneOf(["_id", "title", "order", "createdAt", "updatedAt"])
+      .default("_id"),
+   direction: yup.string().oneOf(["asc", "desc"]).optional().default("desc"),
 });
 
 export const createLessonSchema = yup.object({

@@ -7,11 +7,11 @@ class ProgressRepo {
 
    async upsert(userId: string, courseId: string, lessonId: string, isCompleted: boolean) {
       return await UserProgress.findOneAndUpdate(
-         { userId, lessonId },
+         { user: userId, lesson: lessonId },
          {
-            userId,
-            courseId,
-            lessonId,
+            user: userId,
+            course: courseId,
+            lesson: lessonId,
             isCompleted,
             completedAt: isCompleted ? new Date() : undefined,
          },
@@ -20,7 +20,7 @@ class ProgressRepo {
    }
 
    async findUserProgressInCourse(userId: string, courseId: string) {
-      return await UserProgress.find({ userId, courseId });
+      return await UserProgress.find({ user: userId, course: courseId });
    }
 }
 

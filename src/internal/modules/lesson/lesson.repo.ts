@@ -42,7 +42,7 @@ class LessonRepo {
    }
 
    async findByCourseId(courseId: string) {
-      return await Lesson.find({ courseId }).sort({ order: 1 });
+      return await Lesson.find({ course: courseId }).sort({ order: 1 });
    }
 }
 

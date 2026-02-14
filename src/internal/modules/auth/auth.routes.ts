@@ -14,6 +14,6 @@ router.post("/register", registerHandler);
 router.post("/login", loginHandler);
 router.post("/refresh", refreshHandler);
 router.get("/profile", authMiddleware, getProfileHandler);
-router.post("/logout", logoutHandler);
+router.get("/logout", logoutHandler);
 
 export default router;

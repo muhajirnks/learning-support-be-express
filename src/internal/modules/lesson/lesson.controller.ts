@@ -11,12 +11,12 @@ import {
 class LessonController {
    async getLessons(req: Request, res: Response) {
       const query = await validateSchema(listLessonSchema, req.query);
-      const result = await lessonService.getLessons(query, req.user?.id);
+      const result = await lessonService.getLessons(query, req.user?.id, req.user?.role);
       paginationResponse(res, result);
    }
 
    async getLessonById(req: Request, res: Response) {
-      const result = await lessonService.getLessonById(req.params.id as string, req.user?.id);
+      const result = await lessonService.getLessonById(req.params.id as string, req.user?.id, req.user?.role);
       successResponse(res, {
          message: "Lesson retrieved successfully",
          data: result,

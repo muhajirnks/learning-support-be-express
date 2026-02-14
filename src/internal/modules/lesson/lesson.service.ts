@@ -5,12 +5,41 @@ import {
    UpdateLessonRequest,
 } from "./lesson.validation";
 import { LessonSchema } from "@/internal/models/lesson";
-import { NewNotFoundError } from "@/pkg/apperror/appError";
+import { NewNotFoundError, NewForbiddenError } from "@/pkg/apperror/appError";
 import mongoose from "mongoose";
 import progressRepo from "../progress/progress.repo";
+import courseRepo from "../course/course.repo";
+import transactionRepo from "../transaction/transaction.repo";
 
 class LessonService {
-   async getLessons(query: ListLessonRequest, userId?: string) {
+   private async checkAccess(courseId: string, userId?: string, role?: string) {
+      if (role === "admin") return true;
+
+      const course = await courseRepo.findById(courseId);
+      if (!course) throw NewNotFoundError("Course not found");
+
+      // Jika kursus gratis (price 0), izinkan akses
+      if (course.price === 0) return true;
+
+      if (!userId || !role) return false;
+
+      // Cek apakah user sudah membeli kursus (status success)
+      const transaction = await transactionRepo.findOne({
+         user: new mongoose.Types.ObjectId(userId),
+         course: new mongoose.Types.ObjectId(courseId),
+         status: "success",
+      });
+
+      if (!transaction) {
+         throw NewForbiddenError("You have not purchased this course yet");
+      }
+
+      return true;
+   }
+
+   async getLessons(query: ListLessonRequest, userId?: string, role?: string) {
+      await this.checkAccess(query.course, userId, role);
+
       const result = await lessonRepo.findAll(query);
 
       if (userId) {
@@ -28,9 +57,11 @@ class LessonService {
       return result;
    }
 
-   async getLessonById(id: string, userId?: string) {
+   async getLessonById(id: string, userId?: string, role?: string) {
       const lesson = await lessonRepo.findById(id);
       if (!lesson) throw NewNotFoundError("Lesson not found");
+
+      await this.checkAccess(lesson.course.toString(), userId, role);
 
       const lessonObj = lesson.toObject();
 
