@@ -1,5 +1,5 @@
 import Lesson, { LessonSchema } from "@/internal/models/lesson";
-import { QueryFilter, UpdateQuery } from "mongoose";
+import { QueryFilter, UpdateQuery, Types } from "mongoose";
 import { ListLessonRequest } from "./lesson.validation";
 
 class LessonRepo {
@@ -43,6 +43,14 @@ class LessonRepo {
 
    async findByCourseId(courseId: string) {
       return await Lesson.find({ course: courseId }).sort({ order: 1 });
+   }
+
+   async countByCourseIds(courseIds: string[]) {
+      const results = await Lesson.aggregate([
+         { $match: { course: { $in: courseIds.map(id => new Types.ObjectId(id)) } } },
+         { $group: { _id: "$course", count: { $sum: 1 } } }
+      ]);
+      return results;
    }
 }
 

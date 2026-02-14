@@ -68,6 +68,7 @@ export const tokenResponse = <T>(res: Response, payload: TokenResponse<T>) => {
 
    return res.status(201).json({
       message,
-      data: data,
+      data,
+      token,
    });
 };

@@ -1,5 +1,5 @@
+import transporter from '@/internal/config/smtp';
 import { config } from 'dotenv';
-import transporter from '@/config/nodemailer';
 config({path: '.env'})
 
 const contactUs = async (name: string, email: string, subject: string, message: string)=>{

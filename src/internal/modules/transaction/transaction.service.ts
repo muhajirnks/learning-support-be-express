@@ -5,8 +5,9 @@ import {
    ListTransactionRequest,
    UpdateTransactionStatusRequest,
 } from "./transaction.validation";
-import { NewNotFoundError } from "@/pkg/apperror/appError";
+import { NewBadRequestError, NewNotFoundError } from "@/pkg/apperror/appError";
 import mongoose from "mongoose";
+import courseRepo from "../course/course.repo";
 
 class TransactionService {
    async getTransactions(query: ListTransactionRequest) {
@@ -23,10 +24,26 @@ class TransactionService {
       userId: string,
       data: CreateTransactionRequest,
    ) {
+      const existingTransaction = await transactionRepo.findOne({
+         user: new mongoose.Types.ObjectId(userId) as any,
+         course: new mongoose.Types.ObjectId(data.course) as any,
+         status: "success",
+      });
+
+      if (existingTransaction) {
+         throw NewBadRequestError("You already bought this course");
+      }
+
+      const course = await courseRepo.findById(data.course)
+
+      if(!course) {
+         throw NewNotFoundError("Course not found");
+      }
+
       const transaction: Partial<TransactionSchema> = {
          user: new mongoose.Types.ObjectId(userId),
          course: new mongoose.Types.ObjectId(data.course),
-         amount: data.amount,
+         amount: course.price,
          paymentMethod: data.paymentMethod,
          status: "pending",
       };

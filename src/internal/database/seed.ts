@@ -6,6 +6,8 @@ import User from "@/internal/models/user";
 import Category from "@/internal/models/category";
 import Course from "../models/course";
 import Lesson from "../models/lesson";
+import Transaction from "../models/transaction";
+import UserProgress from "../models/userProgress";
 
 const seed = async () => {
    try {
@@ -14,8 +16,11 @@ const seed = async () => {
       console.log("Connected to database for seeding...");
 
       // Clear existing data
+      await Transaction.deleteMany({});
       await User.deleteMany({});
       await Category.deleteMany({});
+      await Lesson.deleteMany({});
+      await UserProgress.deleteMany({});
       await Course.deleteMany({});
       console.log("Cleared existing data.");
 

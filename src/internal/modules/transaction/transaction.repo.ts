@@ -14,6 +14,21 @@ class TransactionRepo {
          filter.user = query.user;
       }
 
+      if (query.startDate || query.endDate) {
+         const dateFilter: any = {};
+         if (query.startDate) {
+            const start = new Date(query.startDate);
+            start.setHours(0, 0, 0, 0);
+            dateFilter.$gte = start;
+         }
+         if (query.endDate) {
+            const end = new Date(query.endDate);
+            end.setHours(23, 59, 59, 999);
+            dateFilter.$lte = end;
+         }
+         filter.createdAt = dateFilter;
+      }
+
       if (query.search) {
          const searchRegex = new RegExp(query.search, "i");
          const [users, courses] = await Promise.all([

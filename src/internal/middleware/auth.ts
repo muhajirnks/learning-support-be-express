@@ -17,7 +17,11 @@ const authMiddleware = async (
    res: Response,
    next: NextFunction,
 ) => {
-   const token = req.cookies.access_token;
+   let token = req.cookies.access_token;
+
+   if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+   }
 
    if (token) {
       try {
@@ -37,7 +41,11 @@ export const silentAuthMiddleware = async (
    res: Response,
    next: NextFunction,
 ) => {
-   const token = req.cookies.access_token;
+   let token = req.cookies.access_token;
+
+   if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+   }
 
    if (token) {
       try {

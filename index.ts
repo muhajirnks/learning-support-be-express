@@ -7,7 +7,6 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import compression from "compression";
 import cors from "cors";
-import path from "path";
 import initV1Route from "@/internal/routes/v1";
 import globalErrorHandler from "@/internal/middleware/globalError";
 
@@ -20,6 +19,7 @@ const bootstrap = async () => {
       const port = process.env.PORT || 3001;
 
       // 2. Middlewares
+      app.use(morgan("dev")); // Dipindahkan ke paling atas agar mencatat semua request
       const allowedOrigins = [
          "http://localhost:5173",
          "http://localhost:80",
@@ -42,20 +42,19 @@ const bootstrap = async () => {
       app.use(express.json());
       app.use(express.urlencoded({ extended: true }));
       app.use(cookieParser());
-      app.use(morgan("tiny"));
-
+      
       // 3. Routes
       app.use("/api/v1", initV1Route());
 
       app.get("/health", (req, res) => {
-         res.status(200).json({ status: "OK", message: "Server is running" });
+         res.status(200).json({ status: "OK", message: "Server is ok" });
       });
 
       // 4. FrontEnd / Static
-      app.use(express.static(path.join(__dirname, "./public")));
-      app.get("/*splat", (req, res) => {
-         res.sendFile(path.join(__dirname, "./public/index.html"));
-      });
+      // app.use(express.static(path.join(__dirname, "./public")));
+      // app.get("/*splat", (req, res) => {
+      //    res.sendFile(path.join(__dirname, "./public/index.html"));
+      // });
 
       // 5. Global Error Handler
       app.use(globalErrorHandler);

@@ -10,6 +10,7 @@ import mongoose from "mongoose";
 import { uploadFile } from "@/pkg/cloudinary/cloudinary";
 import progressRepo from "../progress/progress.repo";
 import transactionRepo from "../transaction/transaction.repo";
+import lessonRepo from "../lesson/lesson.repo";
 import { PaginationResult } from "@/pkg/pagination/models";
 
 class CourseService {
@@ -73,7 +74,7 @@ class CourseService {
          const completedCount = userProgress.filter(
             (p) => p.isCompleted,
          ).length;
-         (courseObj as any).completedLessonsCount = completedCount;
+         (courseObj as any).completedLessons = completedCount;
       }
 
       return courseObj;
@@ -144,10 +145,107 @@ class CourseService {
       }
 
       // Find courses by IDs
-      return await courseRepo.findAll({
+      const result = await courseRepo.findAll({
          ...query,
          ids: courseIds,
       });
+
+      // Optimization: Batch fetch lessons count and user progress to avoid N+1 query
+      const currentCourseIds = result.data.map(c => c._id.toString());
+      
+      const [lessonsCounts, userProgressList] = await Promise.all([
+         lessonRepo.countByCourseIds(currentCourseIds),
+         progressRepo.findUserProgressInCourses(userId, currentCourseIds)
+      ]);
+
+      // Map lessons count for easy access
+      const lessonsCountMap = lessonsCounts.reduce((acc, curr) => {
+         acc[curr._id.toString()] = curr.count;
+         return acc;
+      }, {} as Record<string, number>);
+
+      // Map completed lessons for each course
+      const completedLessonsMap = userProgressList.reduce((acc, curr) => {
+         if (curr.isCompleted) {
+            const cId = curr.course.toString();
+            acc[cId] = (acc[cId] || 0) + 1;
+         }
+         return acc;
+      }, {} as Record<string, number>);
+
+      // Add progress percentage for each course
+      result.data = result.data.map((course) => {
+         const courseId = course._id.toString();
+         const totalLessons = lessonsCountMap[courseId] || 0;
+         const completedLessons = completedLessonsMap[courseId] || 0;
+
+         const progressPercentage = totalLessons > 0 
+            ? Math.round((completedLessons / totalLessons) * 100) 
+            : 0;
+
+         return {
+            ...course,
+            progressPercentage,
+            totalLessons,
+            completedLessons
+         };
+      }) as any;
+
+      return result;
+   }
+
+   async getUserStats(userId: string) {
+      // Get all successful transactions
+      const transactions = await transactionRepo.findMany({
+         user: new mongoose.Types.ObjectId(userId),
+         status: "success",
+      });
+
+      const courseIds = transactions.map((t) => t.course.toString());
+      const totalCourses = courseIds.length;
+
+      if (totalCourses === 0) {
+         return {
+            totalCourses: 0,
+            completedCourses: 0,
+            totalTransactions: transactions.length,
+         };
+      }
+
+      // Batch fetch data to calculate progress
+      const [lessonsCounts, userProgressList] = await Promise.all([
+         lessonRepo.countByCourseIds(courseIds),
+         progressRepo.findUserProgressInCourses(userId, courseIds)
+      ]);
+
+      const lessonsCountMap = lessonsCounts.reduce((acc, curr) => {
+         acc[curr._id.toString()] = curr.count;
+         return acc;
+      }, {} as Record<string, number>);
+
+      const completedLessonsMap = userProgressList.reduce((acc, curr) => {
+         if (curr.isCompleted) {
+            const cId = curr.course.toString();
+            acc[cId] = (acc[cId] || 0) + 1;
+         }
+         return acc;
+      }, {} as Record<string, number>);
+
+      // Calculate how many courses are 100% completed
+      let completedCourses = 0;
+      courseIds.forEach(id => {
+         const total = lessonsCountMap[id] || 0;
+         const completed = completedLessonsMap[id] || 0;
+         if (total > 0 && completed === total) {
+            completedCourses++;
+         }
+      });
+
+      return {
+         totalCourses,
+         completedCourses,
+         totalTransactions: transactions.length,
+      };
    }
 }
 

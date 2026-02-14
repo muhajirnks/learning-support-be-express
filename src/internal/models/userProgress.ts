@@ -41,7 +41,7 @@ const userProgressSchema = new Schema<UserProgressSchema>(
 );
 
 // Satu user hanya bisa punya satu status progress per lesson
-userProgressSchema.index({ userId: 1, lessonId: 1 }, { unique: true });
+userProgressSchema.index({ user: 1, lesson: 1 }, { unique: true });
 
 const UserProgress = model<
    UserProgressSchema,

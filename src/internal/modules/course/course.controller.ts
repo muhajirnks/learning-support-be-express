@@ -58,6 +58,14 @@ class CourseController {
       const result = await courseService.getMyCourses(req.user!.id, query);
       paginationResponse(res, result);
    }
+
+   async getUserStats(req: Request, res: Response) {
+      const result = await courseService.getUserStats(req.user!.id);
+      successResponse(res, {
+         message: "User stats retrieved successfully",
+         data: result,
+      });
+   }
 }
 
 export default new CourseController();

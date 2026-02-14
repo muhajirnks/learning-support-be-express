@@ -2,7 +2,7 @@ import UserProgress from "@/internal/models/userProgress";
 
 class ProgressRepo {
    async findOne(userId: string, lessonId: string) {
-      return await UserProgress.findOne({ userId, lessonId });
+      return await UserProgress.findOne({ user: userId, lesson: lessonId });
    }
 
    async upsert(userId: string, courseId: string, lessonId: string, isCompleted: boolean) {
@@ -15,12 +15,16 @@ class ProgressRepo {
             isCompleted,
             completedAt: isCompleted ? new Date() : undefined,
          },
-         { upsert: true, new: true }
+         { upsert: true, returnDocument: 'after' }
       );
    }
 
    async findUserProgressInCourse(userId: string, courseId: string) {
       return await UserProgress.find({ user: userId, course: courseId });
+   }
+
+   async findUserProgressInCourses(userId: string, courseIds: string[]) {
+      return await UserProgress.find({ user: userId, course: { $in: courseIds } });
    }
 }
 
