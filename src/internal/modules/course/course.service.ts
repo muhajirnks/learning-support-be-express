@@ -4,16 +4,40 @@ import { CreateCourseRequest, ListCourseRequest, UpdateCourseRequest } from "./c
 import { NewNotFoundError } from "@/pkg/apperror/appError";
 import mongoose from "mongoose";
 import { uploadFile } from "@/pkg/cloudinary/cloudinary";
+import progressRepo from "../progress/progress.repo";
 
 class CourseService {
-   async getCourses(query: ListCourseRequest) {
-      return await courseRepo.findAll(query);
+   async getCourses(query: ListCourseRequest, userId?: string) {
+      const result = await courseRepo.findAll(query);
+      
+      if (userId) {
+         // Check purchased status for each course (mocked as true for now)
+         result.data = result.data.map((course) => ({
+            ...course,
+            isPurchased: true, 
+         }));
+      }
+
+      return result;
    }
 
-   async getCourseById(id: string) {
+   async getCourseById(id: string, userId?: string) {
       const course = await courseRepo.findById(id);
       if (!course) throw NewNotFoundError("Course not found");
-      return course;
+
+      const courseObj = course.toObject();
+      
+      if (userId) {
+         // Mocked as true for now
+         (courseObj as any).isPurchased = true;
+         
+         // Get progress
+         const userProgress = await progressRepo.findUserProgressInCourse(userId, id);
+         const completedCount = userProgress.filter(p => p.isCompleted).length;
+         (courseObj as any).completedLessonsCount = completedCount;
+      }
+
+      return courseObj;
    }
 
    async createCourse(data: CreateCourseRequest) {
@@ -26,7 +50,7 @@ class CourseService {
       };
 
       if (data.thumbnail) {
-         const { publicPath } = await uploadFile(data.thumbnail, "products");
+         const { publicPath } = await uploadFile(data.thumbnail, "courses");
          course.thumbnailUrl = publicPath;
       }
 
@@ -43,7 +67,7 @@ class CourseService {
       };
 
       if (data.thumbnail) {
-         const { publicPath } = await uploadFile(data.thumbnail, "products");
+         const { publicPath } = await uploadFile(data.thumbnail, "courses");
          course.thumbnailUrl = publicPath;
       }
 

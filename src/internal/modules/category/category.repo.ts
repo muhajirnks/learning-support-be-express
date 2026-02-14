@@ -16,7 +16,6 @@ class CategoryRepo {
             ["_id", "desc"],
          ],
          lean: true,
-         populate: "category",
       });
    }
 

@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import categoryService from "./category.service";
-import { successResponse, createdResponse } from "@/pkg/response/success";
+import {
+   successResponse,
+   createdResponse,
+   paginationResponse,
+} from "@/pkg/response/success";
 import { validateSchema } from "@/pkg/validation/validate";
 import {
    createCategorySchema,
@@ -12,14 +16,13 @@ class CategoryController {
    async getCategories(req: Request, res: Response) {
       const query = await validateSchema(listCategorySchema, req.query);
       const result = await categoryService.getCategories(query);
-      successResponse(res, {
-         message: "Categories retrieved successfully",
-         data: result,
-      });
+      paginationResponse(res, result);
    }
 
    async getCategoryById(req: Request, res: Response) {
-      const result = await categoryService.getCategoryById(req.params.id as string);
+      const result = await categoryService.getCategoryById(
+         req.params.id as string,
+      );
       successResponse(res, {
          message: "Category retrieved successfully",
          data: result,

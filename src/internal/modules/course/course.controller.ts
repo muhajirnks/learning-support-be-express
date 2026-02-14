@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import courseService from "./course.service";
-import { successResponse, createdResponse } from "@/pkg/response/success";
+import { successResponse, createdResponse, paginationResponse } from "@/pkg/response/success";
 import { validateSchema } from "@/pkg/validation/validate";
 import {
    createCourseSchema,
@@ -11,15 +11,12 @@ import {
 class CourseController {
    async getCourses(req: Request, res: Response) {
       const query = await validateSchema(listCourseSchema, req.query);
-      const result = await courseService.getCourses(query);
-      successResponse(res, {
-         message: "Courses retrieved successfully",
-         data: result,
-      });
+      const result = await courseService.getCourses(query, req.user?.id);
+      paginationResponse(res, result);
    }
 
    async getCourseById(req: Request, res: Response) {
-      const result = await courseService.getCourseById(req.params.id as string);
+      const result = await courseService.getCourseById(req.params.id as string, req.user?.id);
       successResponse(res, {
          message: "Course retrieved successfully",
          data: result,

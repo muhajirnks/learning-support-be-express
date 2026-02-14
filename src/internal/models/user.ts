@@ -4,6 +4,7 @@ import { PaginateModel } from "@/pkg/pagination/mongoosePlugin";
 
 export interface UserSchema {
    _id: Types.ObjectId;
+   avatarUrl: string;
    name: string;
    email: string;
    password?: string;
@@ -14,6 +15,11 @@ export interface UserSchema {
 
 const userSchema = new Schema<UserSchema>(
    {
+      avatarUrl: {
+         type: String,
+         required: true,
+         default: '/default avatar.jpg'
+      },
       name: {
          type: String,
          required: true,

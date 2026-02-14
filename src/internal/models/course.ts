@@ -9,6 +9,7 @@ export interface CourseSchema {
    price: number;
    category: Types.ObjectId;
    thumbnailUrl?: string;
+   goals: string[];
    updatedAt: NativeDate;
    createdAt: NativeDate;
 }
@@ -36,6 +37,10 @@ const courseSchema = new Schema<CourseSchema>(
          type: Schema.Types.ObjectId,
          ref: "Category",
          required: true,
+      },
+      goals: {
+         type: [String],
+         default: [],
       },
       thumbnailUrl: {
          type: String,

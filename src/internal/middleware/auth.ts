@@ -32,6 +32,27 @@ const authMiddleware = async (
    }
 };
 
+export const silentAuthMiddleware = async (
+   req: Request,
+   res: Response,
+   next: NextFunction,
+) => {
+   const token = req.cookies.access_token;
+
+   if (token) {
+      try {
+         const user = await verifyToken(token);
+         req.user = user;
+      } catch (err: any) {
+         // Silently ignore invalid tokens
+         req.user = null;
+      }
+   } else {
+      req.user = null;
+   }
+   next();
+};
+
 export const verifyToken = async (token: string) => {
    try {
       const decoded = jwt.verify(token, process.env.JWT_KEY!);

@@ -1,14 +1,14 @@
 import { Router } from "express";
 import courseController from "./course.controller";
-import authMiddleware from "@/internal/middleware/auth";
+import authMiddleware, { silentAuthMiddleware } from "@/internal/middleware/auth";
 import roleMiddleware from "@/internal/middleware/role";
 import { uploadCourseThumbnail } from "@/internal/middleware/upload";
 
 const router = Router();
 
 // Public routes
-router.get("/", courseController.getCourses);
-router.get("/:id", courseController.getCourseById);
+router.get("/", silentAuthMiddleware, courseController.getCourses);
+router.get("/:id", silentAuthMiddleware, courseController.getCourseById);
 
 // Admin routes
 router.post("/", authMiddleware, roleMiddleware(["admin"]), uploadCourseThumbnail, courseController.createCourse);

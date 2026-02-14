@@ -29,7 +29,7 @@ export const listCourseSchema = yup.object({
          "Max price must be greater than min price",
          function (value) {
             const { minPrice } = this.parent;
-            return Boolean(value) || !minPrice || value! > minPrice;
+            return !value || (!minPrice || value! > minPrice);
          },
       ),
 });
