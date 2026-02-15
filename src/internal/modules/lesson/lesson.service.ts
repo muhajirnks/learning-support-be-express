@@ -37,10 +37,8 @@ class LessonService {
       return true;
    }
 
-   async getLessons(query: ListLessonRequest, userId?: string, role?: string) {
+   async getLessons(query: ListLessonRequest, userId?: string) {
       const result = await lessonRepo.findAll(query);
-
-      result.data.forEach((d: any) => {delete d.content})
 
       if (userId) {
          const userProgress = await progressRepo.findUserProgressInCourse(userId, query.course);

@@ -11,7 +11,7 @@ import {
 class LessonController {
    async getLessons(req: Request, res: Response) {
       const query = await validateSchema(listLessonSchema, req.query);
-      const result = await lessonService.getLessons(query, req.user?.id, req.user?.role);
+      const result = await lessonService.getLessons(query, req.user?.id);
       paginationResponse(res, result);
    }
 

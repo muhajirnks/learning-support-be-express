@@ -7,7 +7,7 @@ class LessonRepo {
       const filter: QueryFilter<LessonSchema> = {};
 
       if (query.search) {
-         filter.title = { $regex: query.search, $options: "i" }
+         filter.title = { $regex: query.search, $options: "i" };
       }
 
       if (query.course) {
@@ -15,6 +15,7 @@ class LessonRepo {
       }
 
       return await Lesson.paginate(filter, {
+         select: '-content',
          page: query.page,
          limit: query.limit,
          sort: [
@@ -42,13 +43,19 @@ class LessonRepo {
    }
 
    async findByCourseId(courseId: string) {
-      return await Lesson.find({ course: courseId }).sort({ order: 1 });
+      return await Lesson.find({ course: courseId })
+         .select("-content")
+         .sort({ order: 1 });
    }
 
    async countByCourseIds(courseIds: string[]) {
       const results = await Lesson.aggregate([
-         { $match: { course: { $in: courseIds.map(id => new Types.ObjectId(id)) } } },
-         { $group: { _id: "$course", count: { $sum: 1 } } }
+         {
+            $match: {
+               course: { $in: courseIds.map((id) => new Types.ObjectId(id)) },
+            },
+         },
+         { $group: { _id: "$course", count: { $sum: 1 } } },
       ]);
       return results;
    }
